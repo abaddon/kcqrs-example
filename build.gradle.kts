@@ -54,7 +54,7 @@ dependencies {
 }
 
 jacoco {
-    toolVersion = Versions.kotlinVersion
+    toolVersion = Versions.jacocoToolVersion
 }
 
 tasks.withType<Test> {
