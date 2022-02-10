@@ -1,9 +1,11 @@
 package io.github.abaddon.kcqrs.examples.counterInMemory
 
+import io.github.abaddon.kcqrs.core.domain.SimpleAggregateCommandHandler
 import io.github.abaddon.kcqrs.examples.counterInMemory.commands.DecreaseCounterCommand
 import io.github.abaddon.kcqrs.examples.counterInMemory.commands.IncreaseCounterCommand
 import io.github.abaddon.kcqrs.examples.counterInMemory.commands.InitialiseCounterCommand
 import io.github.abaddon.kcqrs.examples.counterInMemory.entities.CounterAggregateId
+import io.github.abaddon.kcqrs.examples.counterInMemory.entities.CounterAggregateRoot
 import io.github.abaddon.kcqrs.examples.counterInMemory.repository.CounterAggregateRepository
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
@@ -13,7 +15,7 @@ fun main() {
     val log = LoggerFactory.getLogger("Main")
 
     val repository = CounterAggregateRepository()
-    val aggregateHandler = CounterAggregateHandler(repository)
+    val aggregateHandler = SimpleAggregateCommandHandler<CounterAggregateRoot>(repository)
     val counterAggregateId = CounterAggregateId()
     val expectedFinalVersion = 4
 

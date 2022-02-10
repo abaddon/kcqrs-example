@@ -1,6 +1,5 @@
 
 group = "io.github.abaddon.kcqrs"
-version = "0.0.1"
 
 object Meta {
     const val desc = "KCQRS Examples"
@@ -11,8 +10,9 @@ object Meta {
 }
 
 object Versions {
-    const val kcqrsCoreVersion = "0.0.1"
-    const val kcqrsTestVersion = "0.0.1"
+    const val kcqrsCoreVersion = "0.0.3"
+    const val kcqrsEventStoreDBVersion = "0.0.3"
+    const val kcqrsTestVersion = "0.0.3"
     const val kustomCompareVersion = "0.0.1"
     const val slf4jVersion = "1.7.25"
     const val kotlinVersion = "1.6.0"
@@ -27,18 +27,41 @@ object Versions {
 
 plugins {
     kotlin("jvm") version "1.6.0"
+    id("com.palantir.git-version") version "0.13.0"
     jacoco
 }
+
+val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
+val details = versionDetails()
+
+val lastTag=details.lastTag.substring(1)
+val snapshotTag= {
+    val list=lastTag.split(".")
+    val third=(list.last().toInt() + 1).toString()
+    "${list[0]}.${list[1]}.$third-SNAPSHOT"
+}
+version = if(details.isCleanTag) lastTag else snapshotTag()
 
 repositories {
     mavenCentral()
     mavenLocal()
+    maven {
+        url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+        mavenContent {
+            snapshotsOnly()
+        }
+    }
+
 }
 
 dependencies {
     //KCQRS Modules
     implementation("io.github.abaddon.kcqrs:kcqrs-core:${Versions.kcqrsCoreVersion}")
+    implementation("io.github.abaddon.kcqrs:kcqrs-EventStoreDB:${Versions.kcqrsEventStoreDBVersion}")
     implementation("io.github.abaddon:kustomCompare:${Versions.kustomCompareVersion}")
+
+    //EventStoreDB
+    implementation("com.eventstore:db-client-java:${Versions.eventStoreDBVersion}")
 
     implementation("org.slf4j:slf4j-api:${Versions.slf4jVersion}")
     implementation("org.slf4j:slf4j-simple:${Versions.slf4jVersion}")

@@ -1,24 +1,22 @@
-package io.github.abaddon.kcqrs.examples.counterInMemory.entities
+package io.github.abaddon.kcqrs.examples.counterEventStore.entities
 
 import io.github.abaddon.kcqrs.core.domain.AggregateRoot
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.exceptions.HandlerForDomainEventNotFoundException
-import io.github.abaddon.kcqrs.examples.counterInMemory.events.CounterDecreaseEvent
-import io.github.abaddon.kcqrs.examples.counterInMemory.events.CounterIncreasedEvent
-import io.github.abaddon.kcqrs.examples.counterInMemory.events.CounterInitialisedEvent
-import io.github.abaddon.kcqrs.examples.counterInMemory.events.DomainErrorEvent
+import io.github.abaddon.kcqrs.examples.counterEventStore.events.CounterDecreaseEvent
+import io.github.abaddon.kcqrs.examples.counterEventStore.events.CounterIncreasedEvent
+import io.github.abaddon.kcqrs.examples.counterEventStore.events.CounterInitialisedEvent
+import io.github.abaddon.kcqrs.examples.counterEventStore.events.DomainErrorEvent
 import org.slf4j.LoggerFactory
 
 data class CounterAggregateRoot constructor(
     override val id: CounterAggregateId,
-    override val version: Long = 0,
+    override val version: Long,
     val counter: Int,
-    override val uncommittedEvents: MutableCollection<IDomainEvent> = mutableListOf()
+    override val uncommittedEvents: MutableCollection<IDomainEvent>
 ) : AggregateRoot() {
 
     private val log = LoggerFactory.getLogger(this::class.simpleName)
-
-    constructor(id: CounterAggregateId) : this(id, 0L, 0, ArrayList<IDomainEvent>())
 
     fun increaseCounter(incrementValue: Int): CounterAggregateRoot {
         return try {
@@ -69,7 +67,7 @@ data class CounterAggregateRoot constructor(
     companion object {
 
         fun initialiseCounter(id: CounterAggregateId, initialValue: Int): CounterAggregateRoot {
-            val emptyAggregate = CounterAggregateRoot(id,0,initialValue)
+            val emptyAggregate = CounterAggregateRoot(CounterAggregateId(), 0L, 0, ArrayList<IDomainEvent>())
             return try {
                 check(initialValue >= 0 && initialValue < Int.MAX_VALUE) { "Value $initialValue not valid, it has to be >= 0 and < ${Int.MAX_VALUE}" }
                 emptyAggregate.raiseEvent(CounterInitialisedEvent(id, initialValue)) as CounterAggregateRoot
