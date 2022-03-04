@@ -1,6 +1,6 @@
 package io.github.abaddon.kcqrs.examples.counterInMemory
 
-import io.github.abaddon.kcqrs.core.domain.IAggregateHandler
+import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.messages.commands.ICommand
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.examples.counterInMemory.commands.DecreaseCounterCommand
@@ -9,37 +9,39 @@ import io.github.abaddon.kcqrs.examples.counterInMemory.entities.CounterAggregat
 import io.github.abaddon.kcqrs.examples.counterInMemory.events.CounterDecreaseEvent
 import io.github.abaddon.kcqrs.examples.counterInMemory.events.CounterIncreasedEvent
 import io.github.abaddon.kcqrs.examples.counterInMemory.events.CounterInitialisedEvent
-import io.github.abaddon.kcqrs.test.KcqrsTestSpecification
+import io.github.abaddon.kcqrs.test.KcqrsAggregateTestSpecification
 import java.util.*
 
-class DecreaseCounterTest: KcqrsTestSpecification<CounterAggregateRoot>(
-    CounterAggregateRoot::class) {
+class DecreaseCounterTest() : KcqrsAggregateTestSpecification<CounterAggregateRoot>() {
 
-    private val counterAggregateId = CounterAggregateId(UUID.randomUUID())
+    override val aggregateId: CounterAggregateId = CounterAggregateId(UUID.randomUUID())
     private val initialValue = 5
     private val incrementValue = 2
     private val decrementValue = 3
 
-    override fun onHandler(): IAggregateHandler<CounterAggregateRoot> {
-        return CounterAggregateHandler(repository)
-    }
 
     override fun given(): List<IDomainEvent> {
         return listOf(
-            CounterInitialisedEvent(counterAggregateId,initialValue),
-            CounterIncreasedEvent(counterAggregateId,incrementValue)
+            CounterInitialisedEvent(aggregateId,initialValue),
+            CounterIncreasedEvent(aggregateId,incrementValue)
         )
     }
 
     override fun `when`(): ICommand<CounterAggregateRoot> {
-        return DecreaseCounterCommand(counterAggregateId,decrementValue)
+        return DecreaseCounterCommand(aggregateId,decrementValue)
     }
 
     override fun expected(): List<IDomainEvent> {
-        return listOf(CounterDecreaseEvent(counterAggregateId,decrementValue))
+        return listOf(CounterDecreaseEvent(aggregateId,decrementValue))
     }
 
     override fun expectedException(): Exception? {
         return null
     }
+
+    override fun emptyAggregate(): (IIdentity) -> CounterAggregateRoot ={
+        CounterAggregateRoot(it as CounterAggregateId)
+    }
+
+    override fun streamNameRoot(): String = "DecreaseCounterTest"
 }
